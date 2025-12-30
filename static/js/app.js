@@ -14,24 +14,63 @@ $(document).ready(function () {
 
 // === Upload new asset ===
 function submitNewAsset() {
+  const fileInput = $("#UpFile")[0];
+  const fileName = $("#FileName").val().trim();
+  const userID = $("#userID").val().trim();
+  const userName = $("#userName").val().trim();
+  
+  // Validation
+  if (!fileInput.files.length) {
+    alert("Please select a file to upload.");
+    return;
+  }
+  if (!fileName) {
+    alert("Please enter a file name.");
+    return;
+  }
+  if (!userID) {
+    alert("Please enter a user ID.");
+    return;
+  }
+  if (!userName) {
+    alert("Please enter a user name.");
+    return;
+  }
+
   const submitData = new FormData();
-  submitData.append("FileName", $("#FileName").val());
-  submitData.append("userID", $("#userID").val());
-  submitData.append("userName", $("#userName").val());
-  submitData.append("File", $("#UpFile")[0].files[0]);
+  submitData.append("fileName", fileName);
+  submitData.append("userID", userID);
+  submitData.append("userName", userName);
+  submitData.append("file", fileInput.files[0]);
+
+  // Show loading state
+  const btn = $("#subNewForm");
+  const originalText = btn.text();
+  btn.text("Uploading...").prop("disabled", true);
 
   $.ajax({
-    url: IUPS,
+    url: "/api/upload",
     data: submitData,
     cache: false,
-    enctype: "multipart/form-data",
     contentType: false,
     processData: false,
     type: "POST",
-    success: (data) => console.log("Upload response:", data),
+    success: (data) => {
+      console.log("Upload response:", data);
+      alert("File uploaded successfully!");
+      // Reset form
+      $("#newAssetForm")[0].reset();
+      btn.text(originalText).prop("disabled", false);
+    },
     error: (xhr, status, err) => {
       console.error("Upload failed:", status, err, xhr?.responseText);
-      alert("Upload failed — see console for details.");
+      let errorMsg = "Upload failed — see console for details.";
+      try {
+        const response = JSON.parse(xhr.responseText);
+        errorMsg = response.error || errorMsg;
+      } catch (e) {}
+      alert(errorMsg);
+      btn.text(originalText).prop("disabled", false);
     },
   });
 }
