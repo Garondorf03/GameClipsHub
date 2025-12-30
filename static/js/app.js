@@ -101,13 +101,14 @@ function getImages() {
 
           // Prefer server-provided blobUrl, otherwise use proxy endpoint to stream the blob
           let fullUrl = '';
-          if (val.blobUrl) {
-            // If the storage allows public access this will work; otherwise the proxy will be used below
-            fullUrl = val.blobUrl;
+          // Prefer server proxy when we have a blobPath/filePath so browser doesn't try direct access
+          if (val.blobPath) {
+            fullUrl = '/api/blob?path=' + encodeURIComponent(val.blobPath);
           } else if (filePath) {
             fullUrl = '/api/blob?path=' + encodeURIComponent(filePath);
-          } else if (val.blobPath) {
-            fullUrl = '/api/blob?path=' + encodeURIComponent(val.blobPath);
+          } else if (val.blobUrl) {
+            // last resort: use direct blob URL (may be blocked if public access disabled)
+            fullUrl = val.blobUrl;
           } else {
             fullUrl = buildBlobUrl(filePath);
           }
