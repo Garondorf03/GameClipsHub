@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en" ng-app="Dashboard">
+  <head>
+    <meta charset="UTF-8">
+
+    <title>Multimedia Sharing Web Application</title>
+
+      <link rel="stylesheet" type="text/css" href="CSS/bootstrap.min.css">
+      <style>
+  /* Custom grid for image/video cards */
+  #ImageList.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .media-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    background: #fff;
+  }
+
+  .media-thumb {
+    width: 100%;
+    height: 180px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .media-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .media-body {
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .media-title {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    word-break: break-word;
+  }
+
+  .video-link {
+    display: inline-block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #3730a3;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .image-error {
+    color: #b91c1c;
+    font-size: 12px;
+    padding: 8px 12px 0;
+    display: none;
+  }
+</style>
+      <script type="text/javascript" src="JS/bootstrap.js"></script>
+      <script type="text/javascript" src="JS/bootstrap.bundle.min.js"></script>
+      <script type="text/javascript" src="JS/jquery-3.6.0.min.js"></script>
+
+      <script type="text/javascript" src="JS/app.js"></script>
+
+  </head>
+  
+  <body>
+
+    <div  class="container">
+
+        <!--Header-->
+        <div class="row align-items-start">
+            <div class="col-2"  ></div>
+
+            <div class="col-8" style="text-align: center;">
+              <h3>Multimedia Sharing Web Application</h3>
+            </div>
+
+            <div class="col-2"  ></div>
+        </div>
+
+        <!--New Asset Box-->
+        <div class="row align-items-start">
+            <div class="col-2"  ></div>
+
+            <div class="col-8" style="text-align: left;border-bottom:1px solid #222222;">
+              <p>Add Image</p>
+
+              <form style="font-size: 10pt;" id="newAssetForm">
+                <div class="mb-3">
+                  <label for="FileName" class="form-label">File Name</label>
+                  <input type="text" class="form-control" id="FileName">
+                </div>
+
+                <div class="mb-3">
+                  <label for="userID" class="form-label">User Id</label>
+                  <input type="string" class="form-control" id="userID">
+                </div>
+
+                <div class="mb-3">
+                  <label for="userName" class="form-label">User Name</label>
+                  <input type="text" class="form-control" id="userName">
+                </div>
+
+                <div class="mb-3">
+                  <label for="UpFile" class="form-label">File to Upload</label>
+                  <input type="file" class="form-control" id="UpFile">
+                </div>
+            
+                <button type="button" id="subNewForm" class="btn btn-primary">Submit</button> <br/><br/>
+                
+              </form>
+            </div>
+
+            <div class="col-2"  ></div>
+        </div>
+
+        <!-- view Asset Area-->
+        <div class="row align-items-start">
+            <div class="col-2"  ></div>
+
+            <div class="col-8" style="text-align: left;" >
+              <div style="padding:5px;">
+                <button  id = "retImages" type="button" class="btn btn-primary">View Images</button>
+              </div>
+
+              <div id="ImageList">
+
+                <h4>Please click the view Images button if you wish to view images on the system.</h4>
+
+              </div>
+            </div>
+
+            <div class="col-2"  ></div>
+        </div>
+
+    </div>
+  
+  </body>
+</html>
