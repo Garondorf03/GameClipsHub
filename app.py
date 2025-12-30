@@ -93,33 +93,43 @@ def upload_file():
 def list_images():
     try:
         items = []
-        # Prefer Cosmos DB metadata if available
+
+        # If Cosmos DB is configured, return items from the metadata store
         if cosmos_container:
-            query = "SELECT c.fileName, c.userID, c.userName, c.blobUrl, c.blobPath, c.timestamp, c.contentType FROM c ORDER BY c.timestamp DESC"
+            query = (
+                "SELECT c.fileName, c.userID, c.userName, c.blobUrl, c.blobPath, c.timestamp, c.contentType "
+                "FROM c ORDER BY c.timestamp DESC"
+            )
             for it in cosmos_container.query_items(query=query, enable_cross_partition_query=True):
                 items.append(it)
 
-        # Fallback to listing blobs directly
+        # Otherwise, list blobs directly from the storage container
         elif blob_service_client:
             container_client = blob_service_client.get_container_client(BLOB_CONTAINER_NAME)
             for blob in container_client.list_blobs():
+                blob_name = getattr(blob, 'name', None)
                 try:
-                    blob_client = container_client.get_blob_client(blob.name)
+                    blob_client = container_client.get_blob_client(blob_name)
                     blob_url = blob_client.url
+                except Exception:
+                    blob_url = None
+
+                content_type = ''
+                try:
+                    content_type = blob.content_settings.content_type if getattr(blob, 'content_settings', None) else ''
+                except Exception:
                     content_type = ''
-                    try:
-                        content_type = blob.content_settings.content_type if getattr(blob, 'content_settings', None) else ''
-                    except Exception:
-                        content_type = ''
-                    items.append({
-                        'fileName': os.path.basename(blob.name),
-                        'blobUrl': blob_url,
-                        'blobPath': blob.name,
-                        'timestamp': blob.last_modified.isoformat() if getattr(blob, 'last_modified', None) else None,
-                        'contentType': content_type
-                    })
+
+                items.append({
+                    'fileName': os.path.basename(blob_name) if blob_name else '',
+                    'blobUrl': blob_url,
+                    'blobPath': blob_name,
+                    'timestamp': blob.last_modified.isoformat() if getattr(blob, 'last_modified', None) else None,
+                    'contentType': content_type,
+                })
 
         return jsonify(items), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
