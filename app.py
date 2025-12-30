@@ -89,5 +89,40 @@ def upload_file():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/images', methods=['GET'])
+def list_images():
+    try:
+        items = []
+        # Prefer Cosmos DB metadata if available
+        if cosmos_container:
+            query = "SELECT c.fileName, c.userID, c.userName, c.blobUrl, c.blobPath, c.timestamp, c.contentType FROM c ORDER BY c.timestamp DESC"
+            for it in cosmos_container.query_items(query=query, enable_cross_partition_query=True):
+                items.append(it)
+
+        # Fallback to listing blobs directly
+        elif blob_service_client:
+            container_client = blob_service_client.get_container_client(BLOB_CONTAINER_NAME)
+            for blob in container_client.list_blobs():
+                try:
+                    blob_client = container_client.get_blob_client(blob.name)
+                    blob_url = blob_client.url
+                    content_type = ''
+                    try:
+                        content_type = blob.content_settings.content_type if getattr(blob, 'content_settings', None) else ''
+                    except Exception:
+                        content_type = ''
+                    items.append({
+                        'fileName': os.path.basename(blob.name),
+                        'blobUrl': blob_url,
+                        'blobPath': blob.name,
+                        'timestamp': blob.last_modified.isoformat() if getattr(blob, 'last_modified', None) else None,
+                        'contentType': content_type
+                    })
+
+        return jsonify(items), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

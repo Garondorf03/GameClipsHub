@@ -1,9 +1,3 @@
-// === Azure Logic App endpoints & storage account ===
-//const IUPS =
-  //"https://prod-03.norwayeast.logic.azure.com:443/workflows/067359a2c76f4066a261976d81576232/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=eywTetnzKA-OGZZjsWjZHa9C2jMvlhBMOyQIOEOcczw";
-//const RAI =
-  //"https://prod-28.norwayeast.logic.azure.com:443/workflows/0c9b146dff084c6093ae46a93728b5c4/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=7lOihj3TYYaRmbq8Mza0-gDasbtcgGnf8XWCwuw52cQ";
-//const BLOB_ACCOUNT = "https://blobstorageweek63.blob.core.windows.net";
 
 // === jQuery handlers ===
 $(document).ready(function () {
@@ -83,7 +77,7 @@ function getImages() {
     .html('<div class="spinner-border" role="status"><span>Loading...</span></div>');
 
   $.ajax({
-    url: RAI,
+    url: "/api/images",
     type: "GET",
     dataType: "json",
     success: function (data) {
@@ -100,12 +94,13 @@ function getImages() {
         try {
           // Extract fields (case-insensitive) + unwrap base64 if needed
           let fileName = unwrapMaybeBase64(val.fileName || val.FileName || "");
-          let filePath = unwrapMaybeBase64(val.filePath || val.FilePath || "");
+          let filePath = unwrapMaybeBase64(val.blobPath || val.filePath || val.FilePath || "");
           let userName = unwrapMaybeBase64(val.userName || val.UserName || "");
           let userID   = unwrapMaybeBase64(val.userID   || val.UserID   || "");
           const contentType = val.contentType || val.ContentType || "";
 
-          const fullUrl = buildBlobUrl(filePath);
+          // Prefer blobUrl if the server returned it
+          const fullUrl = val.blobUrl || buildBlobUrl(filePath);
           const isVideo = isLikelyVideo({ contentType, url: fullUrl, fileName });
 
           // Build a card for the grid
