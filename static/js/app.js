@@ -99,8 +99,18 @@ function getImages() {
           let userID   = unwrapMaybeBase64(val.userID   || val.UserID   || "");
           const contentType = val.contentType || val.ContentType || "";
 
-          // Prefer blobUrl if the server returned it
-          const fullUrl = val.blobUrl || buildBlobUrl(filePath);
+          // Prefer server-provided blobUrl, otherwise use proxy endpoint to stream the blob
+          let fullUrl = '';
+          if (val.blobUrl) {
+            // If the storage allows public access this will work; otherwise the proxy will be used below
+            fullUrl = val.blobUrl;
+          } else if (filePath) {
+            fullUrl = '/api/blob?path=' + encodeURIComponent(filePath);
+          } else if (val.blobPath) {
+            fullUrl = '/api/blob?path=' + encodeURIComponent(val.blobPath);
+          } else {
+            fullUrl = buildBlobUrl(filePath);
+          }
           const isVideo = isLikelyVideo({ contentType, url: fullUrl, fileName });
 
           // Build a card for the grid

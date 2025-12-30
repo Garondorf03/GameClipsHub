@@ -5,6 +5,8 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
+from flask import Response
+import io
 
 # Load environment variables from .env file
 load_dotenv()
@@ -129,6 +131,54 @@ def list_images():
                 })
 
         return jsonify(items), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/blob', methods=['GET'])
+def proxy_blob():
+    """Stream a blob through the Flask server. Query param: path=container/path/to/blob or just blob/path (container fixed)."""
+    path = request.args.get('path') or request.args.get('blobPath')
+    if not path:
+        return jsonify({'error': 'missing path parameter'}), 400
+
+    if not blob_service_client:
+        return jsonify({'error': 'Blob storage not configured'}), 500
+
+    try:
+        container_client = blob_service_client.get_container_client(BLOB_CONTAINER_NAME)
+        # normalize: if path includes container name prefix, strip it
+        blob_name = path
+        # if user passed full URL, try to extract the blob path
+        if path.startswith('http'):
+            # naive extraction: take everything after the container name
+            try:
+                from urllib.parse import urlparse
+                p = urlparse(path)
+                # path like /container/blob/path
+                parts = p.path.split('/')
+                if len(parts) >= 3:
+                    # parts[1] is container name
+                    blob_name = '/'.join(parts[2:])
+            except Exception:
+                pass
+
+        blob_client = container_client.get_blob_client(blob_name)
+        downloader = blob_client.download_blob()
+        data = downloader.readall()
+        # attempt to get content type
+        content_type = ''
+        try:
+            props = blob_client.get_blob_properties()
+            content_type = getattr(props.content_settings, 'content_type', '') or ''
+        except Exception:
+            content_type = ''
+
+        if not content_type:
+            content_type = 'application/octet-stream'
+
+        return Response(data, mimetype=content_type)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
