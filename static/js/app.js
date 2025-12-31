@@ -1,7 +1,6 @@
 
 // === jQuery handlers ===
 $(document).ready(function () {
-  $("#retImages").click(getImages);
   $("#subNewForm").click(submitNewAsset);
   $("#logoutBtn").click(() => (window.location.href = "login.html"));
   // Automatically load images on page load

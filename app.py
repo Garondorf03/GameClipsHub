@@ -37,6 +37,21 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/gallery')
+def gallery():
+    return render_template('gallery.html')
+
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     try:
